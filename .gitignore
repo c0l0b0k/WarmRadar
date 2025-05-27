@@ -1,0 +1,35 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.egg-info/
+*.sqlite3
+env/
+venv/
+*.log
+
+# Django
+media/
+staticfiles/
+db.sqlite3
+
+# pytest
+.pytest_cache/
+
+# coverage
+.coverage
+htmlcov/
+
+# VSCode / PyCharm
+.vscode/
+.idea/
+
+# React
+node_modules/
+build/
+dist/
+.env
+.env.local
+
+# macOS
+.DS_Store
