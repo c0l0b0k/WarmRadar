@@ -5,3 +5,4 @@ pytest
 pytest-django
 django-cors-headers
 pandas
+scipy

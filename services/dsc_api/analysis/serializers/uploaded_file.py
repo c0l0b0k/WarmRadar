@@ -9,5 +9,6 @@ class UploadedFileSerializer(serializers.ModelSerializer):
         read_only_fields = ["original_filename", "uploaded_at"]
 
     def create(self, validated_data):
+        print(validated_data)
         validated_data["original_filename"] = validated_data["file"].name
         return super().create(validated_data)
