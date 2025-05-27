@@ -3,3 +3,4 @@ djangorestframework
 python-dotenv
 pytest
 pytest-django
+django-cors-headers
