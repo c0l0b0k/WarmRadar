@@ -31,5 +31,6 @@ dist/
 .env
 .env.local
 
-# macOS
-.DS_Store
+
+# Other
+test_del/
