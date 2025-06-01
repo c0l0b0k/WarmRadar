@@ -21,3 +21,14 @@ export async function classifyFile(fileId) {
   if (!response.ok) throw new Error("Ошибка при классификации");
   return await response.json();
 }
+
+
+export async function getPlot(params: object) {
+  const res = await fetch(`${API_URL}/plot/`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(params),
+  });
+  if (!res.ok) throw new Error("Ошибка при получении графика");
+  return await res.json();
+}

@@ -6,3 +6,5 @@ pytest-django
 django-cors-headers
 pandas
 scipy
+matplotlib
+plotly
