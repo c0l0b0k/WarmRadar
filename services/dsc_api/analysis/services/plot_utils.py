@@ -1,6 +1,3 @@
-
-
-
 import io
 import os
 import pandas as pd
@@ -11,8 +8,6 @@ import numpy as np
 from scipy.signal import savgol_filter, find_peaks
 
 
-
-
 DATA_PATH = "data/data_piroliz_10"
 
 # Названия столбцов в данных
@@ -20,23 +15,7 @@ TEMP_COL = "Temp./°C"
 DSC_COL = "DSC/(uV/mg)"
 TGA_COL = "Mass/%"
 
-def load_netzsch5(path, enc="cp1251"):
-    with open(path, encoding=enc, errors="replace") as f:
-        for ln, line in enumerate(f):
-            if line.startswith("##"):
-                start = ln + 1
-                break
-    return pd.read_csv(
-        path,
-        sep=";",
-        decimal=",",
-        header=None,
-        skiprows=start,
-        usecols=[0, 2],          # 0‑ Temp, 2‑ DSC
-        names=[TEMP_COL, DSC_COL],
-        encoding=enc,
-        engine="python"
-    )
+
 
 
 from typing import List, Tuple
@@ -198,63 +177,6 @@ def build_main_lines_for_groups(groups: list[list[tuple[int, int]]], temp: pd.Se
 
     return main_lines
 
-def find_events(path, df, fig, ax1):
-    temp = df[TEMP_COL].astype(float)
-    dsc = df[DSC_COL].astype(float)
-
-    points, dsc_smooth, d1, d2 = detect_event_points_only(temp, dsc)
-
-    d1_norm = d1 / np.max(np.abs(d1)) if np.max(np.abs(d1)) != 0 else d1
-    d2_norm = d2 / np.max(np.abs(d2)) if np.max(np.abs(d2)) != 0 else d2
-
-    ax1.plot(temp, dsc_smooth, label="DSC (smooth)", linewidth=2, color='blue')
-
-    for i, idx in enumerate(points):
-        ax1.plot(temp.iloc[idx], dsc_smooth[idx], 'ro')
-        ax1.text(temp.iloc[idx], dsc_smooth[idx], f"P{i + 1}", fontsize=8)
-
-    segments = find_convex_segments(temp, dsc, points, max_temp_span=400)
-    groups = group_segments_by_overlap(segments, temp)
-
-    # Отрисовать разными цветами каждую группу
-    colors = ['yellow', 'magenta', 'lime', 'cyan', 'orange']
-    for gi, group in enumerate(groups):
-        for idx1, idx2 in group:
-            ax1.plot(
-                [temp.iloc[idx1], temp.iloc[idx2]],
-                [dsc[idx1], dsc[idx2]],
-                color=colors[gi % len(colors)],
-                linewidth=2,
-                zorder=2
-            )
-
-    # Главные линии
-    main_lines = build_main_lines_for_groups(groups, temp, dsc)
-
-
-
-    # Отрисовка главных линий поверх
-    for idx1, idx2 in main_lines:
-        ax1.plot([temp.iloc[idx1], temp.iloc[idx2]], [dsc[idx1], dsc[idx2]], color='black', linewidth=3, zorder=3)
-
-    ax1.legend(loc="upper left")
-    ax1.grid()
-
-    ax2 = ax1.twinx()
-    #ax2.plot(temp, d1_norm,  color='red', alpha=0.7)#label="1st derivative (norm)",
-    #ax2.plot(temp, d2_norm,  color='green', linestyle="--", alpha=0.7)#label="2nd derivative (norm)",
-    ax2.set_ylabel("Normalized derivatives", color='black')
-    ax2.tick_params(axis='y', labelcolor='black')
-    ax2.axhline(0, color='black', linestyle=':', linewidth=1)
-    ax2.legend(loc="upper right")
-
-    fig.suptitle("DSC: ключевые точки", fontsize=14)
-    fig.tight_layout()
-    fig.subplots_adjust(top=0.92)
-
-    return plt
-
-
 
 import plotly.graph_objects as go
 from analysis.services.analyze_dsc import load_and_analyze
@@ -269,77 +191,138 @@ def create_plotly_figure(
     show_deriv2,
     show_points,
     show_segments,
-    show_tga=False,
-    show_d1_tga=False,
-    show_d2_tga=False,
+    show_tga,
+    show_d1_tga,
+    show_d2_tga,
 ):
     data = load_and_analyze(pk, smooth_window, smooth_poly)
     temp = data["temp"]
 
     fig = go.Figure()
 
-    # Основные линии
+    # ======= Основные линии =======
     if show_raw:
-        fig.add_trace(go.Scatter(x=temp, y=data["dsc"], name="DSC (raw)", line=dict(color="gray")))
+        fig.add_trace(go.Scatter(
+            x=temp, y=data["dsc"], name="DSC (raw)",
+            line=dict(color="gray"), yaxis="y"
+        ))
     if show_smooth:
-        fig.add_trace(go.Scatter(x=temp, y=data["dsc_smooth"], name="DSC (smooth)", line=dict(color="blue")))
+        fig.add_trace(go.Scatter(
+            x=temp, y=data["dsc_smooth"], name="DSC (smooth)",
+            line=dict(color="blue", width=2), yaxis="y"
+        ))
 
-    # Производные DSC
+    # ======= Производные DSC =======
     if show_deriv1:
-        fig.add_trace(go.Scatter(x=temp, y=data["d1_dsc"], name="d1(DSC)", line=dict(color="red", dash="dash")))
+        fig.add_trace(go.Scatter(
+            x=temp, y=data["d1_dsc"], name="d1(DSC)",
+            line=dict(color="red", dash="dash"), yaxis="y3"
+        ))
     if show_deriv2:
-        fig.add_trace(go.Scatter(x=temp, y=data["d2_dsc"], name="d2(DSC)", line=dict(color="darkred", dash="dot")))
+        fig.add_trace(go.Scatter(
+            x=temp, y=data["d2_dsc"], name="d2(DSC)",
+            line=dict(color="brown", dash="dot"), yaxis="y3"
+        ))
 
-    # TGA
+    # ======= TGA =======
     if show_tga and data["tga"] is not None:
-        fig.add_trace(go.Scatter(x=temp, y=data["tga"], name="TGA", line=dict(color="green")))
-
+        fig.add_trace(go.Scatter(
+            x=temp, y=data["tga"], name="TGA",
+            line=dict(color="green", width=2), yaxis="y2"
+        ))
     if show_d1_tga and data["d1_tga"] is not None:
-        fig.add_trace(go.Scatter(x=temp, y=data["d1_tga"], name="d1(TGA)", line=dict(color="purple", dash="dash")))
-
+        fig.add_trace(go.Scatter(
+            x=temp, y=data["d1_tga"], name="d1(TGA)",
+            line=dict(color="purple", dash="dash"), yaxis="y3"
+        ))
     if show_d2_tga and data["d2_tga"] is not None:
-        fig.add_trace(go.Scatter(x=temp, y=data["d2_tga"], name="d2(TGA)", line=dict(color="brown", dash="dot")))
+        fig.add_trace(go.Scatter(
+            x=temp, y=data["d2_tga"], name="d2(TGA)",
+            line=dict(color="orange", dash="dot"), yaxis="y3"
+        ))
 
-    # Точки
+    # ======= Точки событий =======
     if show_points:
         fig.add_trace(go.Scatter(
             x=temp[data["points"]],
             y=data["dsc_smooth"][data["points"]],
             mode='markers+text',
             name='Points',
-            marker=dict(color='red'),
+            marker=dict(color='red', size=6),
             text=[f'P{i+1}' for i in range(len(data["points"]))],
-            textposition='top center'
+            textposition='top center',
+            yaxis="y"
         ))
 
-    # Сегменты
+    # ======= Жёлтые отрезки =======
     if show_segments:
         for idx1, idx2 in data["segments"]:
             fig.add_trace(go.Scatter(
                 x=[temp.iloc[idx1], temp.iloc[idx2]],
                 y=[data["dsc"][idx1], data["dsc"][idx2]],
                 mode='lines',
-                line=dict(color='yellow'),
-                showlegend=False
+                line=dict(color='gold', width=2),
+                showlegend=False,
+                yaxis="y"
             ))
 
-    # Главные линии
+    # ======= Главные линии (чёрные) =======
     for idx1, idx2 in data["main_lines"]:
         fig.add_trace(go.Scatter(
             x=[temp.iloc[idx1], temp.iloc[idx2]],
             y=[data["dsc"][idx1], data["dsc"][idx2]],
             mode='lines',
             line=dict(color='black', width=3),
-            name="Main line"
+            name="Main line",
+            yaxis="y"
         ))
 
+    # ======= Layout с 3 осями =======
     fig.update_layout(
         title="DSC + TGA Analysis",
-        xaxis_title="Temperature (°C)",
-        yaxis_title="Signal",
-        legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
-        margin=dict(t=80, b=40)
+        xaxis=dict(
+            title="Temperature (°C)",
+            domain=[0.3, 0.85]  # оставляем место слева и справа для осей
+        ),
+
+        # Левая внутренняя: DSC
+        yaxis=dict(
+            title=dict(text="DSC (µV/mg)", font=dict(color="blue")),
+            tickfont=dict(color="blue"),
+            anchor="x",
+            side="left"
+        ),
+
+        # Левая внешняя: производные
+        yaxis2=dict(
+            title=dict(text="Derivatives", font=dict(color="red")),
+            tickfont=dict(color="red"),
+            anchor="free",
+            overlaying="y",
+            side="left",
+            position=0.2  # 👈 чуть левее основной оси
+        ),
+
+        # Правая ось: TGA
+        yaxis3=dict(
+            title=dict(text="Mass (%)", font=dict(color="green")),
+            tickfont=dict(color="green"),
+            anchor="free",
+            overlaying="y",
+            side="right",
+            position=0.88  # 👈 немного правее от основной области
+        ),
+
+        legend=dict(
+            orientation="h",
+            yanchor="bottom",
+            y=1.02,
+            xanchor="right",
+            x=1
+        ),
+
+        margin=dict(t=80, b=40),
+        width=1000,
+        height=600,
     )
-
     return fig
-

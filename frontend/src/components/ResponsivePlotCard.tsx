@@ -5,7 +5,7 @@ const defaultParams = {
   pk: 14,
   smooth_window: 11,
   smooth_poly: 3,
-  show_raw: true,
+  show_raw: false,
   show_smooth: true,
   show_deriv1: true,
   show_deriv2: true,

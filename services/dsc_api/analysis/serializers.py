@@ -27,12 +27,17 @@ class UploadedFileSerializer(serializers.ModelSerializer):
 from rest_framework import serializers
 
 class PlotParamsSerializer(serializers.Serializer):
-    pk = serializers.IntegerField(default=14)
-    smooth_window = serializers.IntegerField(default=11)
-    smooth_poly = serializers.IntegerField(default=3)
-    show_raw = serializers.BooleanField(default=True)
+    pk = serializers.IntegerField()
+    smooth_window = serializers.IntegerField(required=False, default=11)
+    smooth_poly = serializers.IntegerField(required=False, default=3)
+
+    show_raw = serializers.BooleanField(default=False)
     show_smooth = serializers.BooleanField(default=True)
     show_deriv1 = serializers.BooleanField(default=True)
     show_deriv2 = serializers.BooleanField(default=True)
     show_points = serializers.BooleanField(default=True)
     show_segments = serializers.BooleanField(default=True)
+
+    show_tga = serializers.BooleanField(default=True)
+    show_d1_tga = serializers.BooleanField(default=True)
+    show_d2_tga = serializers.BooleanField(default=True)
