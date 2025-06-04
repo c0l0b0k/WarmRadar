@@ -3,10 +3,13 @@ import FileUpload from "./components/FileUpload";
 import DscPlot from "./components/DscPlot";
 import ResponsivePlotCard from "./components/ResponsivePlotCard";
 
+import AppRouter from "./router";
+import "./App.css";
+
 function App() {
   return (
-    <div className="min-h-screen bg-gray-100">
-      <ResponsivePlotCard />
+    <div className="font-sans text-gray-800">
+      <AppRouter />
     </div>
   );
 }
