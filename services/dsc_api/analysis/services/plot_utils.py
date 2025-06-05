@@ -190,7 +190,8 @@ def create_plotly_figure(
     show_deriv1,
     show_deriv2,
     show_points,
-    show_segments,
+    show_segments, #Нужно ли?
+    show_events_line,
     show_tga,
     show_d1_tga,
     show_d2_tga,
@@ -203,42 +204,45 @@ def create_plotly_figure(
     # ======= Основные линии =======
     if show_raw:
         fig.add_trace(go.Scatter(
-            x=temp, y=data["dsc"], name="DSC (raw)",
+            x=temp, y=data["dsc"], name="ДСК",
             line=dict(color="gray"), yaxis="y"
         ))
     if show_smooth:
         fig.add_trace(go.Scatter(
-            x=temp, y=data["dsc_smooth"], name="DSC (smooth)",
-            line=dict(color="blue", width=2), yaxis="y"
+            x=temp, y=data["dsc_smooth"], name="ДСК (сглаж)",
+            line=dict(color="blue", width=2), yaxis="y",meta={"id": "dsc_smooth"}
         ))
 
     # ======= Производные DSC =======
     if show_deriv1:
         fig.add_trace(go.Scatter(
-            x=temp, y=data["d1_dsc"], name="d1(DSC)",
+            x=temp, y=data["d1_dsc"], name="d1(ДСК)",
             line=dict(color="red", dash="dash"), yaxis="y3"
         ))
     if show_deriv2:
         fig.add_trace(go.Scatter(
-            x=temp, y=data["d2_dsc"], name="d2(DSC)",
+            x=temp, y=data["d2_dsc"], name="d2(ДСК)",
             line=dict(color="brown", dash="dot"), yaxis="y3"
         ))
 
     # ======= TGA =======
     if show_tga and data["tga"] is not None:
         fig.add_trace(go.Scatter(
-            x=temp, y=data["tga"], name="TGA",
-            line=dict(color="green", width=2), yaxis="y2"
+            x=temp, y=data["tga"], name="ТГА",
+            line=dict(color="green", width=2), yaxis="y2",
+            visible='legendonly'
         ))
     if show_d1_tga and data["d1_tga"] is not None:
         fig.add_trace(go.Scatter(
-            x=temp, y=data["d1_tga"], name="d1(TGA)",
-            line=dict(color="purple", dash="dash"), yaxis="y3"
+            x=temp, y=data["d1_tga"], name="d1(ТГА)",
+            line=dict(color="purple", dash="dash"), yaxis="y3",
+            visible='legendonly'
         ))
     if show_d2_tga and data["d2_tga"] is not None:
         fig.add_trace(go.Scatter(
-            x=temp, y=data["d2_tga"], name="d2(TGA)",
-            line=dict(color="orange", dash="dot"), yaxis="y3"
+            x=temp, y=data["d2_tga"], name="d2(ТГА)",
+            line=dict(color="orange", dash="dot"), yaxis="y3",
+            visible='legendonly'
         ))
 
     # ======= Точки событий =======
@@ -247,11 +251,12 @@ def create_plotly_figure(
             x=temp[data["points"]],
             y=data["dsc_smooth"][data["points"]],
             mode='markers+text',
-            name='Points',
-            marker=dict(color='red', size=6),
+            name='Точки',
+            marker=dict(color='red', size=10),
             text=[f'P{i+1}' for i in range(len(data["points"]))],
             textposition='top center',
-            yaxis="y"
+            yaxis="y",
+            meta={"id": "points"}
         ))
 
     # ======= Жёлтые отрезки =======
@@ -267,27 +272,35 @@ def create_plotly_figure(
             ))
 
     # ======= Главные линии (чёрные) =======
-    for idx1, idx2 in data["main_lines"]:
+    if show_events_line:
+        x_lines = []
+        y_lines = []
+
+        for idx1, idx2 in data["main_lines"]:
+            x_lines.extend([temp.iloc[idx1], temp.iloc[idx2], None])
+            y_lines.extend([data["dsc"][idx1], data["dsc"][idx2], None])
+
         fig.add_trace(go.Scatter(
-            x=[temp.iloc[idx1], temp.iloc[idx2]],
-            y=[data["dsc"][idx1], data["dsc"][idx2]],
+            x=x_lines,
+            y=y_lines,
             mode='lines',
             line=dict(color='black', width=3),
-            name="Main line",
-            yaxis="y"
+            name='Сегменты',
+            yaxis='y',
+            meta= {"id": "main_lines"},
+
         ))
 
     # ======= Layout с 3 осями =======
     fig.update_layout(
-        title="DSC + TGA Analysis",
         xaxis=dict(
-            title="Temperature (°C)",
+            title="Температура (°C)",
             domain=[0.3, 0.85]  # оставляем место слева и справа для осей
         ),
 
         # Левая внутренняя: DSC
         yaxis=dict(
-            title=dict(text="DSC (µV/mg)", font=dict(color="blue")),
+            title=dict(text="ДСК (µV/mg)", font=dict(color="blue")),
             tickfont=dict(color="blue"),
             anchor="x",
             side="left"
@@ -295,8 +308,8 @@ def create_plotly_figure(
 
         # Левая внешняя: производные
         yaxis2=dict(
-            title=dict(text="Derivatives", font=dict(color="red")),
-            tickfont=dict(color="red"),
+            title=dict(text="Масса (%)", font=dict(color="green")),
+            tickfont=dict(color="green"),
             anchor="free",
             overlaying="y",
             side="left",
@@ -305,8 +318,8 @@ def create_plotly_figure(
 
         # Правая ось: TGA
         yaxis3=dict(
-            title=dict(text="Mass (%)", font=dict(color="green")),
-            tickfont=dict(color="green"),
+            title=dict(text="Производные", font=dict(color="red")),
+            tickfont=dict(color="red"),
             anchor="free",
             overlaying="y",
             side="right",
@@ -314,15 +327,15 @@ def create_plotly_figure(
         ),
 
         legend=dict(
-            orientation="h",
-            yanchor="bottom",
-            y=1.02,
-            xanchor="right",
-            x=1
+            orientation="v",
+            yanchor="top",
+            y=1,
+            xanchor="left",
+            x=0,
+            font = dict(size=18),
         ),
 
         margin=dict(t=80, b=40),
-        width=1000,
-        height=600,
+
     )
     return fig

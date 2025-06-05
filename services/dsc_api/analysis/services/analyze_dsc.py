@@ -20,24 +20,24 @@ def load_and_analyze(pk: int, smooth_window: int, smooth_poly: int):
     """
     df = load_measurement_file(pk)
 
-    temp = df[TEMP_COL].astype(float)
+    temperature = df[TEMP_COL].astype(float)
     dsc = df[DSC_COL].astype(float)
     tga = df[TGA_COL].astype(float) if TGA_COL in df else None
 
-    points, dsc_smooth, d1_dsc, d2_dsc = detect_event_points_only(temp, dsc, window=smooth_window, poly=smooth_poly)
+    points, dsc_smooth, d1_dsc, d2_dsc = detect_event_points_only(temperature, dsc, window=smooth_window, poly=smooth_poly)
 
     if tga is not None:
-        d1_tga = np.gradient(tga, temp)
-        d2_tga = np.gradient(d1_tga, temp)
+        d1_tga = np.gradient(tga, temperature)
+        d2_tga = np.gradient(d1_tga, temperature)
     else:
         d1_tga = d2_tga = None
 
-    segments = find_convex_segments(temp, dsc, points)
-    groups = group_segments_by_overlap(segments, temp)
-    main_lines = build_main_lines_for_groups(groups, temp, dsc)
+    segments = find_convex_segments(temperature, dsc, points)
+    groups = group_segments_by_overlap(segments, temperature)
+    main_lines = build_main_lines_for_groups(groups, temperature, dsc)
 
     return {
-        "temp": temp,
+        "temp": temperature,
         "dsc": dsc,
         "dsc_smooth": dsc_smooth,
         "d1_dsc": d1_dsc,
@@ -49,3 +49,36 @@ def load_and_analyze(pk: int, smooth_window: int, smooth_poly: int):
         "segments": segments,
         "main_lines": main_lines,
     }
+
+def update_main_lines(pk: int, points: list[int] ):
+    """
+        Получает пользовательские точки и возвращает главные линии на основе оригинальных данных
+    """
+    df = load_measurement_file(pk)
+
+    temperature = df[TEMP_COL].astype(float)
+    dsc = df[DSC_COL].astype(float)
+
+    # Ищем ближайшие индексы
+    indexes = []
+    for pt in points:
+        x, y = pt["x"], pt["y"]
+        idx = np.argmin(np.abs(temperature - x))
+        indexes.append(idx)
+    print(indexes)
+    # Генерируем сегменты
+    segments = find_convex_segments(temperature, dsc, indexes)
+    groups = group_segments_by_overlap(segments, temperature)
+    main_lines = build_main_lines_for_groups(groups, temperature, dsc)
+
+    result = [
+        {
+            "x1": float(temperature.iloc[idx1]),
+            "y1": float(dsc.iloc[idx1]),
+            "x2": float(temperature.iloc[idx2]),
+            "y2": float(dsc.iloc[idx2])
+        }
+        for idx1, idx2 in main_lines
+    ]
+
+    return result

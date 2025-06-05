@@ -24,7 +24,6 @@ export default function ResponsivePlotCard1() {
       <h1 className="text-2xl font-bold text-center mb-4">📊 DSC Анализ</h1>
 
       <div className="bg-white shadow-md rounded-lg p-2 sm:p-4">
-        {loading && <p className="text-gray-500">Загрузка графика...</p>}
         {error && <p className="text-red-500">Ошибка: {error}</p>}
         {data && (
           <Plot

@@ -16,7 +16,7 @@ const defaultParams = {
 export default function DscPlot() {
   const { data, loading, error } = useDscPlot(defaultParams);
 
-  if (loading) return <p className="text-gray-500 p-4">Загрузка графика...</p>;
+  // if (loading) return <p className="text-gray-500 p-4">Загрузка графика...</p>;
   if (error) return <p className="text-red-500 p-4">Ошибка: {error}</p>;
 
   return (

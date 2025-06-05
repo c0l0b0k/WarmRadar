@@ -132,7 +132,11 @@ class ClassifyMaterialView(APIView):
 
 from .serializers import PlotParamsSerializer
 import plotly.graph_objects as go
-from analysis.services.plot_utils import create_plotly_figure  # твоя логика
+from analysis.services.plot_utils import create_plotly_figure
+from analysis.services.analyze_dsc import update_main_lines
+from rest_framework.decorators import api_view
+
+
 
 class PlotView(APIView):
     def post(self, request):
@@ -141,3 +145,18 @@ class PlotView(APIView):
         print(serializer.validated_data)
         fig = create_plotly_figure(**serializer.validated_data)
         return Response(fig.to_dict(), status=status.HTTP_200_OK)
+
+
+@api_view(["POST"])
+def recalculate_main_lines(request):
+    """
+    Получает пользовательские точки и возвращает главные линии на основе оригинальных данных
+    """
+    points = request.data.get("points", [])
+    pk = request.data.get("pk")
+    if not pk or not points:
+        return Response({"error": "Missing points or pk"}, status=400)
+    print(f"points {points}")
+    main_lines = update_main_lines(pk,points)
+    print(f"main_lines {main_lines}")
+    return Response(main_lines)
