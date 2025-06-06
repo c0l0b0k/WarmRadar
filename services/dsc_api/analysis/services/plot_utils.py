@@ -359,7 +359,7 @@ def create_plotly_figure(
 
         # Левая внутренняя: DSC
         yaxis=dict(
-            title=dict(text="ДСК (µV/mg)", font=dict(color="blue")),
+            title=dict(text="ДСК (мкВт/мг)", font=dict(color="blue")),
             tickfont=dict(color="blue"),
             anchor="x",
             side="left"

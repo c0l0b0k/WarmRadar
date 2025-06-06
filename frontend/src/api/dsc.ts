@@ -1,17 +1,15 @@
 const API_URL = import.meta.env.VITE_API_URL;
 
 
-export async function uploadFile(file) {
-  const formData = new FormData();
-  formData.append("file", file);
+/* -------- upload -------- */
+export async function uploadFile(file: File) {
+  const form = new FormData();
+  form.append("file", file);
 
-  const response = await fetch(`${API_URL}/upload/`, {
-    method: "POST",
-    body: formData,
-  });
+  const res = await fetch(`${API_URL}/upload/`, { method: "POST", body: form });
+  if (!res.ok) throw new Error("Ошибка при загрузке");
 
-  if (!response.ok) throw new Error("Ошибка при загрузке файла");
-  return await response.json();
+  return await res.json();           // { id: 40, ... }
 }
 
 export async function classifyFile(fileId) {

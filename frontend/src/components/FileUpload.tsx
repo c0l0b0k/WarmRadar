@@ -1,54 +1,79 @@
-import React, { useState } from "react";
-import { uploadFile, classifyFile } from "../api/dsc";
-import FileItem from "./FileItem";
+// src/components/FileUpload.tsx
+import { useState, DragEvent } from "react";
+import { uploadFile } from "../api/dsc";
 
-export default function FileUpload() {
-  const [files, setFiles] = useState([]);
-  const [error, setError] = useState(null);
+export default function FileUpload({
+  onUploaded,
+}: {
+  onUploaded: (pk: number) => void;
+}) {
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
+  const [drag, setDrag] = useState(false);
 
-  const handleUpload = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
+  /* ---------- общая функция загрузки ---------- */
+  async function doUpload(file: File) {
     try {
-      setError(null);
-      const uploaded = await uploadFile(file);
-      setFiles((prev) => [...prev, uploaded]);
-    } catch (err) {
-      setError("Ошибка загрузки файла");
+      setBusy(true);
+      const res = await uploadFile(file); // { id: ... }
+      onUploaded(res.id);
+    } catch {
+      setErr("Ошибка загрузки");
+    } finally {
+      setBusy(false);
     }
+  }
+
+  /* ---------- drop handlers ---------- */
+  const handleDrop = (e: DragEvent<HTMLLabelElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDrag(false);
+
+    const file = e.dataTransfer.files?.[0];
+    if (file) doUpload(file);
   };
 
-  const handleClassify = async (fileId) => {
-    try {
-      const result = await classifyFile(fileId);
-      setFiles((prev) =>
-        prev.map((f) =>
-          f.id === fileId ? { ...f, classification: result } : f
-        )
-      );
-    } catch (err) {
-      alert("Ошибка классификации");
-    }
+  const handleDragOver = (e: DragEvent<HTMLLabelElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDrag(true);
   };
 
+  const handleDragLeave = () => setDrag(false);
+
+  /* ---------- click-upload ---------- */
+  const handleChoose = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    file && doUpload(file);
+  };
+
+  /* ---------- render ---------- */
   return (
-    <div className="max-w-xl mx-auto space-y-4">
-      <input
-        type="file"
-        accept=".txt"
-        onChange={handleUpload}
-        className="block w-full border p-2"
-      />
-      {error && <div className="text-red-600">{error}</div>}
-      <ul className="space-y-2">
-        {files.map((file) => (
-          <FileItem
-            key={file.id}
-            file={file}
-            onClassify={() => handleClassify(file.id)}
-          />
-        ))}
-      </ul>
+    <div className="w-48 p-4 border rounded text-center">
+      <p className="font-semibold mb-2">Загрузка .txt</p>
+
+      <label
+        className={
+          "block h-28 border-2 rounded cursor-pointer transition " +
+          (drag
+            ? "border-blue-600 bg-blue-50"
+            : "border-dashed hover:border-gray-400")
+        }
+        onDrop={handleDrop}
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+      >
+        {busy ? "..." : "Перетащите файл или нажмите"}
+        <input
+          type="file"
+          accept=".txt"
+          hidden
+          onChange={handleChoose}
+        />
+      </label>
+
+      {err && <p className="text-red-600 text-sm mt-2">{err}</p>}
     </div>
   );
 }

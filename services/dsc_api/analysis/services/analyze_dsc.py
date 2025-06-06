@@ -57,6 +57,7 @@ def update_main_lines(pk: int, points: list[int] ):
     """
         Получает пользовательские точки и возвращает главные линии и площадь на основе оригинальных данных
     """
+    print(f"pk {pk}")
     df = load_measurement_file(pk)
 
     temperature = df[TEMP_COL].astype(float)
