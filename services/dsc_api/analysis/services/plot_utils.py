@@ -6,7 +6,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy.signal import savgol_filter, find_peaks
-
+from scipy.integrate import simpson  # новый метод
 
 DATA_PATH = "data/data_piroliz_10"
 
@@ -178,6 +178,39 @@ def build_main_lines_for_groups(groups: list[list[tuple[int, int]]], temp: pd.Se
     return main_lines
 
 
+def calculate_main_areas(main_lines, temperature, dsc):
+    result = []
+
+    for idx1, idx2 in main_lines:
+        i1, i2 = sorted([idx1, idx2])
+        x = temperature.iloc[i1:i2 + 1]
+        y = dsc.iloc[i1:i2 + 1]
+
+        # Построим прямую между крайними точками
+        x1, x2 = x.iloc[0], x.iloc[-1]
+        y1, y2 = y.iloc[0], y.iloc[-1]
+        slope = (y2 - y1) / (x2 - x1)
+        y_line = slope * (x - x1) + y1
+
+        # Посчитаем площадь между кривой и прямой
+        area = float(simpson(y - y_line, x))
+
+        x_vals = list(x)
+        y_vals = list(y_line)
+
+        polyline = (
+                [{"x": float(xi), "y": float(yi)} for xi, yi in zip(x_vals, y)] +
+                [{"x": float(xi), "y": float(yi)} for xi, yi in zip(reversed(x_vals), reversed(y_vals))]
+        )
+
+        result.append({
+            "area": area,
+            "polyline": polyline
+        })
+
+    return result
+
+
 import plotly.graph_objects as go
 from analysis.services.analyze_dsc import load_and_analyze
 
@@ -191,7 +224,8 @@ def create_plotly_figure(
     show_deriv2,
     show_points,
     show_segments, #Нужно ли?
-    show_events_line,
+    show_main_lines,
+    show_main_areas,
     show_tga,
     show_d1_tga,
     show_d2_tga,
@@ -272,7 +306,7 @@ def create_plotly_figure(
             ))
 
     # ======= Главные линии (чёрные) =======
-    if show_events_line:
+    if show_main_lines:
         x_lines = []
         y_lines = []
 
@@ -290,6 +324,31 @@ def create_plotly_figure(
             meta= {"id": "main_lines"},
 
         ))
+
+    # if show_main_areas:
+    #     x = []
+    #     y = []
+    #
+    #     for region in data["main_areas"]:
+    #         poly_x = [p["x"] for p in region["polyline"]]
+    #         poly_y = [p["y"] for p in region["polyline"]]
+    #
+    #         # Добавляем один замкнутый полигон
+    #         x.extend(poly_x + [poly_x[0], None])  # замыкаем + разделяем
+    #         y.extend(poly_y + [poly_y[0], None])
+    #
+    #     fig.add_trace(go.Scatter(
+    #         x=x,
+    #         y=y,
+    #         fill='toself',
+    #         mode='lines',
+    #         line=dict(width=0),
+    #         name="Область",
+    #         fillcolor="rgba(255, 165, 0, 0.2)",
+    #         yaxis='y',
+    #         meta={"id": "main_area"},
+    #         showlegend=True,
+    #     ))
 
     # ======= Layout с 3 осями =======
     fig.update_layout(

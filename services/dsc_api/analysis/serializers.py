@@ -37,7 +37,8 @@ class PlotParamsSerializer(serializers.Serializer):
     show_deriv2 = serializers.BooleanField(default=True)
     show_points = serializers.BooleanField(default=True)
     show_segments = serializers.BooleanField(default=True)
-    show_events_line = serializers.BooleanField(default=True)
+    show_main_lines = serializers.BooleanField(default=True)
+    show_main_areas=serializers.BooleanField(default=True)
 
     show_tga = serializers.BooleanField(default=True)
     show_d1_tga = serializers.BooleanField(default=True)

@@ -33,11 +33,13 @@ export async function getPlot(params: object) {
   return await res.json();
 }
 
-export interface MainLine {
+interface MainLine {
   x1: number;
   y1: number;
   x2: number;
   y2: number;
+  area: number;
+  polyline: { x: number; y: number }[];
 }
 
 export async function fetchMainLinesByPoints(

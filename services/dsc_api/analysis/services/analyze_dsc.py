@@ -8,6 +8,7 @@ from .plot_utils import (
     find_convex_segments,
     group_segments_by_overlap,
     build_main_lines_for_groups,
+    calculate_main_areas,
     TEMP_COL,
     DSC_COL,
     DATA_PATH,
@@ -35,6 +36,7 @@ def load_and_analyze(pk: int, smooth_window: int, smooth_poly: int):
     segments = find_convex_segments(temperature, dsc, points)
     groups = group_segments_by_overlap(segments, temperature)
     main_lines = build_main_lines_for_groups(groups, temperature, dsc)
+    main_areas = calculate_main_areas(main_lines, temperature, dsc)
 
     return {
         "temp": temperature,
@@ -48,11 +50,12 @@ def load_and_analyze(pk: int, smooth_window: int, smooth_poly: int):
         "points": points,
         "segments": segments,
         "main_lines": main_lines,
+        "main_areas": main_areas,
     }
 
 def update_main_lines(pk: int, points: list[int] ):
     """
-        Получает пользовательские точки и возвращает главные линии на основе оригинальных данных
+        Получает пользовательские точки и возвращает главные линии и площадь на основе оригинальных данных
     """
     df = load_measurement_file(pk)
 
@@ -70,15 +73,17 @@ def update_main_lines(pk: int, points: list[int] ):
     segments = find_convex_segments(temperature, dsc, indexes)
     groups = group_segments_by_overlap(segments, temperature)
     main_lines = build_main_lines_for_groups(groups, temperature, dsc)
-
+    main_areas = calculate_main_areas(main_lines, temperature, dsc)
     result = [
         {
             "x1": float(temperature.iloc[idx1]),
             "y1": float(dsc.iloc[idx1]),
             "x2": float(temperature.iloc[idx2]),
-            "y2": float(dsc.iloc[idx2])
+            "y2": float(dsc.iloc[idx2]),
+            "area": main_areas[i]["area"],  # <-- добавляем площадь
+            "polyline": main_areas[i]["polyline"],  # ←  добавляем контур
         }
-        for idx1, idx2 in main_lines
+        for i, (idx1, idx2) in enumerate(main_lines)
     ]
 
     return result
