@@ -13,7 +13,6 @@ const TRACE_ID_MAIN_LINES = "main_lines"
 
 
 const defaultParams = {
-  pk: 14,
   smooth_poly: 3,
   show_raw: true,
   show_smooth: true,
@@ -59,13 +58,10 @@ function unpackArray(obj: any): number[] {
 
 
 
-export default function ResponsivePlotCard() {
-    const [smoothWindow, setSmoothWindow] = useState(10);
+export default function ResponsivePlotCard({ pk }: { pk: number }) {
 
-    const params = {
-        ...defaultParams,
-        smooth_window: smoothWindow,
-    };
+  const [smoothWindow, setSmoothWindow] = useState(10);
+  const params = { ...defaultParams, pk, smooth_window: smoothWindow };
   const { data, loading, error } = useDscPlot(params);
 
   const [points, setPoints] = useState<{ x: number; y: number }[]>([]);
@@ -108,7 +104,7 @@ export default function ResponsivePlotCard() {
 
   const fetchMainLines = async () => {
     try {
-      const lines = await fetchMainLinesByPoints(defaultParams.pk, points);
+      const lines = await fetchMainLinesByPoints(pk, points);
       setMainLines(lines);
     } catch (err) {
       console.error("Не удалось получить главные линии:", err);
@@ -134,7 +130,7 @@ export default function ResponsivePlotCard() {
     setPoints(pts);                          // ставим точки
 
     // — Запрашиваем линии и площади —
-    fetchMainLinesByPoints(defaultParams.pk, pts)
+    fetchMainLinesByPoints(pk, pts)
       .then(setMainLines)
       .catch(err => console.error("❌ fetchMainLines", err));
   }, [data]);
