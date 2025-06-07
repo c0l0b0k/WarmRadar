@@ -1,0 +1,29 @@
+# ---- не тащим секреты ----
+.env
+.env.*
+
+# ---- Python build artefacts ----
+__pycache__/
+*.py[cod]
+
+# ---- виртуальные окружения ----
+venv/
+.venv/
+ENV/
+
+# ---- редактор-/IDE-файлы ----
+.vscode/
+.idea/
+
+# ---- логи и времянки ----
+*.log
+*.tmp
+
+# ---- Git ----
+.git
+.gitignore
+
+# ---- Node (если в каталоге есть package.json, но мы собираем другой образ) ----
+node_modules/
+
+test_del/

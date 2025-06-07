@@ -1,0 +1,11 @@
+Django>=4.2
+djangorestframework
+gunicorn>=21.2
+python-dotenv
+pytest
+pytest-django
+django-cors-headers
+pandas
+scipy
+matplotlib
+plotly
