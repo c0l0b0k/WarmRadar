@@ -11,4 +11,4 @@ COPY . .
 
 RUN python manage.py collectstatic --noinput
 
-CMD ["gunicorn", "dsc_api.wsgi:application", "-b", "0.0.0.0:8001"]
+CMD ["gunicorn", "warmradar.wsgi:application", "-b", "0.0.0.0:8001"]

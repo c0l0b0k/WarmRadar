@@ -1,4 +1,4 @@
-# analysis/tests/test_upload.py
+# thermal/tests/test_upload.py
 from rest_framework.test import APIClient
 from django.urls import reverse
 from django.core.files.uploadedfile import SimpleUploadedFile

@@ -4,7 +4,7 @@ from typing import Tuple
 import numpy as np
 import pandas as pd
 
-from analysis.services.parsing.factory import get_parser
+from thermal.services.parsing.factory import get_parser
 
 
 def interpolate_columns(

@@ -5,8 +5,8 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
-from analysis.services.event_detector import detect_events
-from analysis.services.data_loader import load_measurement_file
+from thermal.services.event_detector import detect_events
+from thermal.services.data_loader import load_measurement_file
 
 TEMP_COL = "Temp./°C"
 DSC_COL = "DSC/(uV/mg)"

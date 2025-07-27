@@ -3,10 +3,10 @@ name: Test dsc_api
 on:
   push:
     paths:
-      - 'services/dsc_api/**'
+      - 'backend/dsc_api/**'
   pull_request:
     paths:
-      - 'services/dsc_api/**'
+      - 'backend/dsc_api/**'
 
 jobs:
   test:
@@ -14,7 +14,7 @@ jobs:
 
     defaults:
       run:
-        working-directory: services/dsc_api
+        working-directory: backend/dsc_api
 
     steps:
     - name: Checkout code

@@ -10,7 +10,7 @@ class MaterialClassificationResultSerializer(serializers.Serializer):
 
 
 from rest_framework import serializers
-from analysis.models import UploadedFile
+from thermal.models import UploadedFile
 
 class UploadedFileSerializer(serializers.ModelSerializer):
     class Meta:

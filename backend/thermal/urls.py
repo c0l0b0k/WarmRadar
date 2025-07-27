@@ -1,10 +1,10 @@
 from django.urls import path
-from analysis.views import UploadFileView
-from analysis.views import ClassifyMaterialView
+from thermal.views import UploadFileView
+from thermal.views import ClassifyMaterialView
 
 
 
-from analysis.views import UploadFileView, ClassifyMaterialView, PlotView, recalculate_main_lines
+from thermal.views import UploadFileView, ClassifyMaterialView, PlotView, recalculate_main_lines
 
 urlpatterns = [
     path("upload/", UploadFileView.as_view(), name="upload-file"),

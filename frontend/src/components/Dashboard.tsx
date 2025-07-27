@@ -2,7 +2,7 @@
 import { useState } from "react";
 import FileUpload from "./FileUpload";
 import ResponsivePlotCard from "./ResponsivePlotCard";
-import { Tabs } from "./Tabs";          // лёгкий таб-бар из ответа выше
+import { Tabs } from "./Tabs";          // лёгкий таб-бар
 
 export default function Dashboard() {
   const [pk , setPk ] = useState<number|null>(null);

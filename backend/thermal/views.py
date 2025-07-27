@@ -1,22 +1,22 @@
 import traceback
 
-from analysis.serializers import UploadedFileSerializer
+from thermal.serializers import UploadedFileSerializer
 import numpy as np
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from pathlib import Path
 from django.conf import settings
-from analysis.models import UploadedFile
-from analysis.services.material_classifier import classify_sample
-from analysis.serializers import MaterialClassificationResultSerializer
+from thermal.models import UploadedFile
+from thermal.services.material_classifier import classify_sample
+from thermal.serializers import MaterialClassificationResultSerializer
 from django.http import HttpResponse
 import matplotlib
 matplotlib.use("Agg")  # <--- Это отключает GUI
 import matplotlib.pyplot as plt
 import io
 
-from analysis.services.parsing.factory import get_parser
+from thermal.services.parsing.factory import get_parser
 
 import numpy as np
 
@@ -35,7 +35,7 @@ class ClassifyMaterialView(APIView):
         try:
             uploaded_file = UploadedFile.objects.get(pk=pk)
             sample_path = Path(uploaded_file.file.path)
-            ref_dir = Path(settings.BASE_DIR) / "analysis" / "resources" / "sample_materials"
+            ref_dir = Path(settings.BASE_DIR) / "thermal" / "resources" / "sample_materials"
 
             config = {
                 "temp_column": "Temp./°C",
@@ -114,7 +114,7 @@ class ClassifyMaterialView(APIView):
 
 # from django.http import HttpResponse, JsonResponse
 # from rest_framework.views import APIView
-# from analysis.services.plot_generator import generate_plot_image
+# from thermal.services.plot_generator import generate_plot_image
 #
 # class PlotView(APIView):
 #     def get(self, request, pk: int):
@@ -132,8 +132,8 @@ class ClassifyMaterialView(APIView):
 
 from .serializers import PlotParamsSerializer
 import plotly.graph_objects as go
-from analysis.services.plot_utils import create_plotly_figure
-from analysis.services.analyze_dsc import update_main_lines
+from thermal.services.plot_utils import create_plotly_figure
+from thermal.services.analyze_dsc import update_main_lines
 from rest_framework.decorators import api_view
 
 

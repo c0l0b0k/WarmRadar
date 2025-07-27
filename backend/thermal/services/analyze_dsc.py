@@ -1,6 +1,6 @@
 import numpy as np
 import pandas as pd
-from analysis.services.data_loader import load_measurement_file
+from thermal.services.data_loader import load_measurement_file
 
 
 from .plot_utils import (

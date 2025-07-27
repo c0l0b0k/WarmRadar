@@ -127,7 +127,7 @@ def group_segments_by_overlap(segments, temp, overlap_eps=10):
                 graph[i].add(j)
                 graph[j].add(i)
 
-    # 3. Поиск компонент связности (классика)
+    # 3. Поиск компонент связности
     visited = set()
     groups = []
 
@@ -212,7 +212,7 @@ def calculate_main_areas(main_lines, temperature, dsc):
 
 
 import plotly.graph_objects as go
-from analysis.services.analyze_dsc import load_and_analyze
+from thermal.services.analyze_dsc import load_and_analyze
 
 def create_plotly_figure(
     pk,
